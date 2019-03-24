@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dao.SellMapper">
+  <resultMap id="BaseResultMap" type="entity.Sell">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="buildId" jdbcType="INTEGER" property="buildid" />
+    <result column="customerId" jdbcType="INTEGER" property="customerid" />
+    <result column="buildName" jdbcType="VARCHAR" property="buildname" />
+    <result column="location" jdbcType="VARCHAR" property="location" />
+    <result column="price" jdbcType="INTEGER" property="price" />
+    <result column="customerName" jdbcType="VARCHAR" property="customername" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="status" jdbcType="VARCHAR" property="status" />
+    <result column="sellType" jdbcType="VARCHAR" property="selltype" />
+    <result column="date" jdbcType="TIMESTAMP" property="date" />
+  </resultMap>
+  <resultMap id="MonthStatisticsResultMap" type="java.util.LinkedHashMap">
+    <result column="month" property="month"/>
+    <result column="buildName" property="buildName"/>
+    <result column="totalSales" property="totalSales"/>
+    <result column="salesAmount" property="salesAmount"/>
+  </resultMap>
+  <resultMap id="QuarterStatisticsResultMap" type="java.util.LinkedHashMap">
+    <result column="quarter" property="quarter"/>
+    <result column="buildName" property="buildName"/>
+    <result column="totalSales" property="totalSales"/>
+    <result column="salesAmount" property="salesAmount"/>
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, buildId, customerId, buildName, location, price, customerName, phone, status, 
+    sellType, date
+  </sql>
+  <select id="selectByExample" parameterType="entity.SellExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from tb_sell
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from tb_sell
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectMonthStatistics" parameterType="java.lang.Integer" resultMap="MonthStatisticsResultMap">
+    select month(date) month , buildname buildName, count(buildId) totalSales, sum(price) salesAmount
+    from tb_sell
+    where year(now()) = year(date)
+    group by month(date), buildId
+    having buildId = #{buildId}
+    order by month(date);
+  </select>
+  <select id="selectQuarterStatistics" parameterType="java.lang.Integer" resultMap="QuarterStatisticsResultMap">
+    select quarter(date) quarter , buildname buildName, count(buildId) totalSales, sum(price) salesAmount
+    from tb_sell
+    where year(now()) = year(date)
+    group by quarter(date), buildId
+    having buildId = #{buildId}
+    order by quarter(date);
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from tb_sell
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="entity.SellExample">
+    delete from tb_sell
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="entity.Sell">
+    insert into tb_sell (id, buildId, customerId, 
+      buildName, location, price, 
+      customerName, phone, status, 
+      sellType, date)
+    values (#{id,jdbcType=INTEGER}, #{buildid,jdbcType=INTEGER}, #{customerid,jdbcType=INTEGER}, 
+      #{buildname,jdbcType=VARCHAR}, #{location,jdbcType=VARCHAR}, #{price,jdbcType=INTEGER}, 
+      #{customername,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, #{status,jdbcType=VARCHAR}, 
+      #{selltype,jdbcType=VARCHAR}, #{date,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="entity.Sell">
+    insert into tb_sell
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="buildid != null">
+        buildId,
+      </if>
+      <if test="customerid != null">
+        customerId,
+      </if>
+      <if test="buildname != null">
+        buildName,
+      </if>
+      <if test="location != null">
+        location,
+      </if>
+      <if test="price != null">
+        price,
+      </if>
+      <if test="customername != null">
+        customerName,
+      </if>
+      <if test="phone != null">
+        phone,
+      </if>
+      <if test="status != null">
+        status,
+      </if>
+      <if test="selltype != null">
+        sellType,
+      </if>
+      <if test="date != null">
+        date,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="buildid != null">
+        #{buildid,jdbcType=INTEGER},
+      </if>
+      <if test="customerid != null">
+        #{customerid,jdbcType=INTEGER},
+      </if>
+      <if test="buildname != null">
+        #{buildname,jdbcType=VARCHAR},
+      </if>
+      <if test="location != null">
+        #{location,jdbcType=VARCHAR},
+      </if>
+      <if test="price != null">
+        #{price,jdbcType=INTEGER},
+      </if>
+      <if test="customername != null">
+        #{customername,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null">
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=VARCHAR},
+      </if>
+      <if test="selltype != null">
+        #{selltype,jdbcType=VARCHAR},
+      </if>
+      <if test="date != null">
+        #{date,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="entity.SellExample" resultType="java.lang.Long">
+    select count(*) from tb_sell
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update tb_sell
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=INTEGER},
+      </if>
+      <if test="record.buildid != null">
+        buildId = #{record.buildid,jdbcType=INTEGER},
+      </if>
+      <if test="record.customerid != null">
+        customerId = #{record.customerid,jdbcType=INTEGER},
+      </if>
+      <if test="record.buildname != null">
+        buildName = #{record.buildname,jdbcType=VARCHAR},
+      </if>
+      <if test="record.location != null">
+        location = #{record.location,jdbcType=VARCHAR},
+      </if>
+      <if test="record.price != null">
+        price = #{record.price,jdbcType=INTEGER},
+      </if>
+      <if test="record.customername != null">
+        customerName = #{record.customername,jdbcType=VARCHAR},
+      </if>
+      <if test="record.phone != null">
+        phone = #{record.phone,jdbcType=VARCHAR},
+      </if>
+      <if test="record.status != null">
+        status = #{record.status,jdbcType=VARCHAR},
+      </if>
+      <if test="record.selltype != null">
+        sellType = #{record.selltype,jdbcType=VARCHAR},
+      </if>
+      <if test="record.date != null">
+        date = #{record.date,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update tb_sell
+    set id = #{record.id,jdbcType=INTEGER},
+      buildId = #{record.buildid,jdbcType=INTEGER},
+      customerId = #{record.customerid,jdbcType=INTEGER},
+      buildName = #{record.buildname,jdbcType=VARCHAR},
+      location = #{record.location,jdbcType=VARCHAR},
+      price = #{record.price,jdbcType=INTEGER},
+      customerName = #{record.customername,jdbcType=VARCHAR},
+      phone = #{record.phone,jdbcType=VARCHAR},
+      status = #{record.status,jdbcType=VARCHAR},
+      sellType = #{record.selltype,jdbcType=VARCHAR},
+      date = #{record.date,jdbcType=TIMESTAMP}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="entity.Sell">
+    update tb_sell
+    <set>
+      <if test="buildid != null">
+        buildId = #{buildid,jdbcType=INTEGER},
+      </if>
+      <if test="customerid != null">
+        customerId = #{customerid,jdbcType=INTEGER},
+      </if>
+      <if test="buildname != null">
+        buildName = #{buildname,jdbcType=VARCHAR},
+      </if>
+      <if test="location != null">
+        location = #{location,jdbcType=VARCHAR},
+      </if>
+      <if test="price != null">
+        price = #{price,jdbcType=INTEGER},
+      </if>
+      <if test="customername != null">
+        customerName = #{customername,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null">
+        phone = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=VARCHAR},
+      </if>
+      <if test="selltype != null">
+        sellType = #{selltype,jdbcType=VARCHAR},
+      </if>
+      <if test="date != null">
+        date = #{date,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="entity.Sell">
+    update tb_sell
+    set buildId = #{buildid,jdbcType=INTEGER},
+      customerId = #{customerid,jdbcType=INTEGER},
+      buildName = #{buildname,jdbcType=VARCHAR},
+      location = #{location,jdbcType=VARCHAR},
+      price = #{price,jdbcType=INTEGER},
+      customerName = #{customername,jdbcType=VARCHAR},
+      phone = #{phone,jdbcType=VARCHAR},
+      status = #{status,jdbcType=VARCHAR},
+      sellType = #{selltype,jdbcType=VARCHAR},
+      date = #{date,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>
